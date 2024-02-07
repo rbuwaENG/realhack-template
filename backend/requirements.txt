@@ -1,0 +1,8 @@
+python-multipart
+fastapi
+python-jose
+passlib
+bcrypt==3.2
+mysql-connector-python
+databases
+aiomysql
