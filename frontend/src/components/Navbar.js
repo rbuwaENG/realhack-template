@@ -7,32 +7,48 @@ import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Cookies from 'js-cookie';
 import { useLocation } from 'react-router-dom';
+import axios from 'axios'
 
 export default function NavbarComponent() {
   const [isLoggedIn, setLoggedIn] = useState(false);
-  const [userToken, setUserToken] = useState('');
-
+  
   // Get the current location object
   const location = useLocation();
 
   // Access the pathname to get the current page
   const currentPage = location.pathname;
 
-  useEffect(() => {
-    if(currentPage !== "/"){
-      // Check if the user is already logged in (cookie exists)
-      const storedUserToken = Cookies.get('userToken');
+  const tokenVerify = async() => {
+    const token = localStorage.getItem('token');
+    const tokenExpiration = localStorage.getItem('tokenExpiration');
 
-      if (storedUserToken) {
-        setUserToken(storedUserToken);
-        setLoggedIn(true);
-      } else {
-        setUserToken('');
-        setLoggedIn(false);
+    if (token && tokenExpiration) {
+      const expirationTime = parseInt(tokenExpiration);
+      if (Date.now() < expirationTime) {
+        // Token is still valid, set it in axios headers
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        try {
+          // Send a request to verify the token with the backend
+          const response = await axios.get('http://localhost:8000/login');
+
+          if(response.status == 200){
+            console.log('Token verified:', response.data);
+            setLoggedIn(true);
+          }
+        } catch (error) {
+          console.error('Error verifying token:', error);
+          setLoggedIn(false);
+        }
       }
     }
+  }
+
+  useEffect(() => {
+    if(currentPage !== "/"){
+      tokenVerify()
+    }
     
-  }, [userToken]);
+  }, []);
   
   
   return (
