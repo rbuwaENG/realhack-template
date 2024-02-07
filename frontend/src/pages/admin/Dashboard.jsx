@@ -30,9 +30,13 @@ function Dashboard(){
     }
 
     const handleLogoutClick = () => {
-        navigate('/');
-        // Reload the page
-        window.location.reload();
+      // Remove token and tokenExpiration from localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('tokenExpiration');
+      
+      navigate('/');
+      // Reload the page
+      window.location.reload();
     }
 
     return(

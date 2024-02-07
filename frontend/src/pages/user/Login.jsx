@@ -4,6 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import axios from "axios"
 
 function UserLogin() {
   const [name, setName] = useState('');
@@ -12,15 +13,34 @@ function UserLogin() {
   const [phone, setPhone] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Check if the user is already logged in (cookie exists)
-    const userToken = Cookies.get('userToken');
+  const tokenVerify = async() => {
+    const token = localStorage.getItem('token');
+    const tokenExpiration = localStorage.getItem('tokenExpiration');
 
-    if (userToken) {
-        navigate('/user');
-        // Reload the page
-        window.location.reload();
+    if (token && tokenExpiration) {
+      const expirationTime = parseInt(tokenExpiration);
+      if (Date.now() < expirationTime) {
+        // Token is still valid, set it in axios headers
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        try {
+          // Send a request to verify the token with the backend
+          const response = await axios.get('http://localhost:8000/login');
+
+          if(response.status == 200){
+            console.log('Token verified:', response.data);
+            navigate('/user');
+            // Reload the page
+            window.location.reload();
+          }
+        } catch (error) {
+          console.error('Error verifying token:', error);
+        }
+      }
     }
+  }
+
+  useEffect(() => {
+    tokenVerify()
   }, [navigate]);
 
   const handleNameChange = (e) => {
@@ -39,24 +59,39 @@ function UserLogin() {
     setPhone(e.target.value);
   };
 
-  const handleButtonClick = () => {
+  const handleButtonClick = async() => {
     // Perform login logic, and if successful, store a cookie
     console.log('name:', name);
     console.log('email:', email);
     console.log('password:', password);
     console.log('phone:', phone);
 
-    // Generate a random userToken using uuid
-    const userToken = uuidv4();
+    try {
+      const response = await axios.post('http://localhost:8000/token', {
+        phone: phone,
+        password: password
+      });
 
-    // Assuming a successful login, store a cookie
-    Cookies.set('userToken', userToken, { expires: 7 }); // Expires in 7 days
+      if(response.status == 200){
+        const token = response.data.access_token;
+        const tokenExpiration = Date.now() + response.data.expires_in * 1000; // Convert expiration time to milliseconds
+        // Store token and expiration time in localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('tokenExpiration', tokenExpiration);
+        // Set token in axios headers
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        console.log('Login successful!');
+        
+        // Redirect to another page
+        navigate('/user');
 
-    // Redirect to another page
-    navigate('/user');
-
-    // Reload the page
-    window.location.reload();
+        // Reload the page
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+    
   };
 
   return (

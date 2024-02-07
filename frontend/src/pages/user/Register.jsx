@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios'
 
 function UserRegister() {
   const [name, setName] = useState('');
@@ -34,24 +35,51 @@ function UserRegister() {
     setAddress(e.target.value);
   };
 
-  const handleButtonClick = () => {
+  const handleButtonClick = async() => {
     console.log('name:', name);
     console.log('email:', email);
     console.log('password:', password);
     console.log('phone:', phone);
     console.log('address:', address);
 
-    // Generate a random userToken using uuid
-    const userToken = uuidv4();
+    try {
+      const Regresponse = await axios.post('http://localhost:8000/register', {
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+        address: address,
+        level: "user"
+      });
 
-    // Assuming a successful login, store a cookie
-    Cookies.set('userToken', userToken, { expires: 7 }); // Expires in 7 days
+      if(Regresponse.status == 200){
+        const tkresponse = await axios.post('http://localhost:8000/token', {
+          phone: phone,
+          password: password
+        });
 
-    // Redirect to another page
-    navigate('/user');
+        if(tkresponse.status == 200){
+          const token = tkresponse.data.access_token;
+          const tokenExpiration = Date.now() + tkresponse.data.expires_in * 1000; // Convert expiration time to milliseconds
+          // Store token and expiration time in localStorage
+          localStorage.setItem('token', token);
+          localStorage.setItem('tokenExpiration', tokenExpiration);
+          // Set token in axios headers
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          console.log('Login successful!');
+          
+          // Redirect to another page
+          navigate('/user');
 
-    // Reload the page
-    window.location.reload();
+          // Reload the page
+          window.location.reload();
+        }
+        
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+
   };
 
   return (

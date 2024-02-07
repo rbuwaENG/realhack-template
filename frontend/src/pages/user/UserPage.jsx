@@ -11,10 +11,13 @@ import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/esm/Button';
 import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 function UserPage(){
 
     const[active, setActive] = useState("Dashboard");
+
+    const navigate = useNavigate();
 
     const handleDashboardClick = () => {
         setActive("Dashboard")
@@ -22,6 +25,16 @@ function UserPage(){
 
     const handlePeopleClick = () => {
         setActive("People")
+    }
+
+    const handleLogoutClick = () => {
+      // Remove token and tokenExpiration from localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('tokenExpiration');
+      
+      navigate('/');
+      // Reload the page
+      window.location.reload();
     }
 
     return(
@@ -53,6 +66,18 @@ function UserPage(){
                     onClick={handlePeopleClick}
                   >
                     People
+                  </Button>
+                </Card.Text>
+
+                {/* Section 3 */}
+                <Card.Text>
+                  <Button
+                    variant="link"
+                    className="text-white"
+                    style={{ textDecoration: 'none', fontWeight: 'normal' }}
+                    onClick={handleLogoutClick}
+                  >
+                    Logout
                   </Button>
                 </Card.Text>
 
