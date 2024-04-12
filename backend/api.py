@@ -30,7 +30,7 @@ SECRET_KEY = "your-secret-key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_WEEKS = 2
 
-connection = mysql.connector.connect(user="root", password="pass123", host="localhost", port="3306", database="test")
+connection = mysql.connector.connect(user="root", password="pass123", host="172.17.0.2", port="3306", database="test")
 
 async def read_users():
     cursor = connection.cursor()
