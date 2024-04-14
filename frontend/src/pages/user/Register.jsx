@@ -52,6 +52,8 @@ function UserRegister() {
         level: "user"
       });
 
+      console.log(Regresponse)
+
       if(Regresponse.status == 200){
         const tkresponse = await axios.post('http://localhost:8000/token', {
           phone: phone,
