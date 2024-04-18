@@ -12,6 +12,10 @@ import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/esm/Button';
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import FileDownload from "../../components/Filedownload";
+import FileUpload from "../../components/Fileupload";
+
+import PeopleContent from "../../components/PeopleContent";
 
 function UserPage(){
 
@@ -19,22 +23,24 @@ function UserPage(){
 
     const navigate = useNavigate();
 
+    const handleLogoutClick = () => {
+
+      // Remove token and tokenExpiration from localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('tokenExpiration');
+      localStorage.removeItem('phone');
+      
+      navigate('/');
+      // Reload the page
+      window.location.reload();
+    }
+
     const handleDashboardClick = () => {
         setActive("Dashboard")
     }
 
     const handlePeopleClick = () => {
         setActive("People")
-    }
-
-    const handleLogoutClick = () => {
-      // Remove token and tokenExpiration from localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('tokenExpiration');
-      
-      navigate('/');
-      // Reload the page
-      window.location.reload();
     }
 
     return(
@@ -93,12 +99,17 @@ function UserPage(){
               <div>
                 {/* Dashboard content goes here */}
                 <h1>Dashboard Content</h1>
+                <h1>upload</h1>
+                <FileUpload/>
+                <h1>download</h1>
+                <FileDownload/>
               </div>
             )}
             {active === 'People' && (
               <div>
                 {/* People content goes here */}
                 <h1>People Content</h1>
+                <PeopleContent/>
               </div>
             )}
 

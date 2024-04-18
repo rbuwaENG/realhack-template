@@ -1,0 +1,3 @@
+docker build -t realhack-frontend .
+docker tag realhack-frontend:latest navodevil/realhack-frontend:latest
+docker push navodevil/realhack-frontend:latest
