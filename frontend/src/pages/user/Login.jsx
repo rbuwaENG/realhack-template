@@ -5,6 +5,8 @@ import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import axios from "axios"
+import { backend_link } from '../../backend_link';
+
 
 function UserLogin() {
   const [name, setName] = useState('');
@@ -14,6 +16,7 @@ function UserLogin() {
   const navigate = useNavigate();
 
   const tokenVerify = async() => {
+
     const token = localStorage.getItem('token');
     const tokenExpiration = localStorage.getItem('tokenExpiration');
 
@@ -24,11 +27,11 @@ function UserLogin() {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {
           // Send a request to verify the token with the backend
-          const response = await axios.get('http://localhost:8000/login');
+          const response = await axios.get(`${backend_link}/login/user`);
 
           if(response.status == 200){
             console.log('Token verified:', response.data);
-            navigate('/user');
+            navigate("/user");
             // Reload the page
             window.location.reload();
           }
@@ -59,6 +62,37 @@ function UserLogin() {
     setPhone(e.target.value);
   };
 
+  const getToken = async() => {
+    try{
+      const response = await axios.post(`${backend_link}/token`, {
+        phone: phone,
+        password: password,
+        level: "user"
+      });
+
+      const token = response.data.access_token;
+      const tokenExpiration = Date.now() + response.data.expires_in * 1000; // Convert expiration time to milliseconds
+      
+      // Store token and expiration time in localStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('tokenExpiration', tokenExpiration);
+      localStorage.setItem('phone', phone);
+      // Set token in axios headers
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      console.log('Login successful!');
+      
+      // Redirect to another page
+      navigate("/user");
+
+      // Reload the page
+      window.location.reload();
+    } catch(err){
+      console.log(err)
+      alert("wrong password or phone")
+    }
+    
+  }
+
   const handleButtonClick = async() => {
     // Perform login logic, and if successful, store a cookie
     console.log('name:', name);
@@ -67,27 +101,7 @@ function UserLogin() {
     console.log('phone:', phone);
 
     try {
-      const response = await axios.post('http://localhost:8000/token', {
-        phone: phone,
-        password: password
-      });
-
-      if(response.status == 200){
-        const token = response.data.access_token;
-        const tokenExpiration = Date.now() + response.data.expires_in * 1000; // Convert expiration time to milliseconds
-        // Store token and expiration time in localStorage
-        localStorage.setItem('token', token);
-        localStorage.setItem('tokenExpiration', tokenExpiration);
-        // Set token in axios headers
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        console.log('Login successful!');
-        
-        // Redirect to another page
-        navigate('/user');
-
-        // Reload the page
-        window.location.reload();
-      }
+      getToken();
     } catch (error) {
       console.error('Error:', error);
     }

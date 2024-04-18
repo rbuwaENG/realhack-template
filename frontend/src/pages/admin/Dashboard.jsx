@@ -30,9 +30,11 @@ function Dashboard(){
     }
 
     const handleLogoutClick = () => {
+
       // Remove token and tokenExpiration from localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('tokenExpiration');
+      localStorage.removeItem('phone');
       
       navigate('/');
       // Reload the page
